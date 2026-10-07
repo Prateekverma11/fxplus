@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'rea
 import Header from './components/Header';
 import NotificationToast from './components/NotificationToast';
 import BookmarksDrawer from './components/BookmarksDrawer';
-import AiChatWidget from './components/AiChatWidget';
 import Dashboard from './pages/Dashboard';
 import socketService from './services/socket';
 import { fetchSystemStatus, fetchCurrencies } from './services/api';
@@ -165,12 +164,6 @@ export default function App() {
           onSelectCurrency={setSelectedCurrency}
           onToggleBookmark={toggleBookmark}
           systemStats={systemStats}
-        />
-
-        {/* AI Currency Intelligence Analyst Chat Widget */}
-        <AiChatWidget
-          selectedCurrency={selectedCurrency}
-          currencies={currencies}
         />
 
         {/* Real-time Alert Notification Toast */}

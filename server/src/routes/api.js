@@ -21,12 +21,8 @@ import {
   manualSync,
   getSystemStatus
 } from '../controllers/adminController.js';
-import { chatWithAi } from '../controllers/aiController.js';
 
 const router = express.Router();
-
-// AI Currency Intelligence
-router.post('/ai/chat', chatWithAi);
 
 // Currencies
 router.get('/currencies', getCurrencies);
