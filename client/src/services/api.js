@@ -83,4 +83,11 @@ export const fetchSystemStatus = async () => {
   return res.data;
 };
 
+// AI Currency Intelligence
+export const fetchAiChat = async (payload) => {
+  const res = await api.post('/ai/chat', payload);
+  return res.data;
+};
+
 export default api;
+
