@@ -1,6 +1,5 @@
 import React from 'react';
-import { Bell, AlertTriangle, CheckCircle, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Bell, AlertTriangle, X } from 'lucide-react';
 
 export default function NotificationToast({ notifications, onDismiss }) {
   if (!notifications || notifications.length === 0) return null;
@@ -10,35 +9,27 @@ export default function NotificationToast({ notifications, onDismiss }) {
       {notifications.map((n) => (
         <div
           key={n.id}
-          className="pointer-events-auto bg-[#0d0d0d] border border-[#262626] rounded-xl p-4 shadow-2xl flex items-start gap-3 transform transition-all"
+          className="pointer-events-auto bg-white border border-zinc-200 rounded-xl p-4 shadow-lg flex items-start gap-3 transform transition-all"
         >
-          <div className="w-8 h-8 rounded-lg bg-zinc-900 text-zinc-300 flex items-center justify-center flex-shrink-0 border border-zinc-800">
-            {n.type === 'alert' ? <AlertTriangle className="w-4 h-4 text-amber-400" /> : <Bell className="w-4 h-4 text-zinc-300" />}
+          <div className="w-8 h-8 rounded-lg bg-zinc-100 text-zinc-700 flex items-center justify-center flex-shrink-0 border border-zinc-200">
+            {n.type === 'alert' ? <AlertTriangle className="w-4 h-4 text-amber-600" /> : <Bell className="w-4 h-4 text-zinc-700" />}
           </div>
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-white tracking-tight">{n.title || 'Market Alert Triggered'}</span>
-              <span className="text-[10px] text-zinc-500 font-mono">{n.time}</span>
+              <span className="text-xs font-semibold text-zinc-900">{n.title || 'Market Update'}</span>
+              <span className="text-[10px] text-zinc-400">{n.time}</span>
             </div>
-            <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
+            <p className="text-xs text-zinc-600 mt-1 leading-relaxed">
               {n.message}
             </p>
-            {n.link && (
-              <Link
-                to={n.link}
-                className="text-[11px] text-white hover:text-zinc-300 font-medium mt-1.5 inline-block underline underline-offset-2"
-              >
-                View Analytics &rarr;
-              </Link>
-            )}
           </div>
 
           <button
             onClick={() => onDismiss(n.id)}
-            className="text-zinc-500 hover:text-white transition-colors p-1"
+            className="text-zinc-400 hover:text-zinc-700 transition-colors p-1"
           >
-            <X className="w-4 h-4" />
+            <X className="w-3.5 h-3.5" />
           </button>
         </div>
       ))}

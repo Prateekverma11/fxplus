@@ -31,7 +31,7 @@ export class IntelligenceEngine {
     const quoteCode = (quote || 'INR').toUpperCase();
 
     // Fetch all historical records ordered chronologically
-    const records = await prisma.exchangeRate.findMany({
+    let records = await prisma.exchangeRate.findMany({
       where: {
         baseCurrency: baseCode,
         quoteCurrency: quoteCode
@@ -40,6 +40,47 @@ export class IntelligenceEngine {
         timestamp: 'asc'
       }
     });
+
+    if ((!records || records.length === 0) && baseCode !== quoteCode) {
+      // Triangulate historical series via USD
+      const [quoteSeries, baseSeries] = await Promise.all([
+        prisma.exchangeRate.findMany({
+          where: { baseCurrency: 'USD', quoteCurrency: quoteCode },
+          orderBy: { timestamp: 'asc' }
+        }),
+        baseCode === 'USD'
+          ? []
+          : prisma.exchangeRate.findMany({
+              where: { baseCurrency: 'USD', quoteCurrency: baseCode },
+              orderBy: { timestamp: 'asc' }
+            })
+      ]);
+
+      if (quoteSeries.length > 0) {
+        if (baseCode === 'USD') {
+          records = quoteSeries;
+        } else if (baseSeries.length > 0) {
+          const baseMap = new Map();
+          for (const b of baseSeries) {
+            const dayKey = b.timestamp.toISOString().split('T')[0];
+            baseMap.set(dayKey, b.rate);
+          }
+
+          records = quoteSeries.map(q => {
+            const dayKey = q.timestamp.toISOString().split('T')[0];
+            const bRate = baseMap.get(dayKey) || baseSeries[baseSeries.length - 1].rate;
+            const rate = bRate > 0 ? Number((q.rate / bRate).toFixed(4)) : q.rate;
+            return {
+              rate,
+              timestamp: q.timestamp,
+              source: q.source,
+              baseCurrency: baseCode,
+              quoteCurrency: quoteCode
+            };
+          });
+        }
+      }
+    }
 
     if (!records || records.length === 0) {
       return null;
