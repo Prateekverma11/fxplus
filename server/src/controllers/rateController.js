@@ -100,13 +100,38 @@ export const getPairRate = async (req, res) => {
   const quote = (req.params.quote || 'INR').toUpperCase();
 
   try {
-    const rateRecord = await prisma.exchangeRate.findFirst({
+    let rateRecord = await prisma.exchangeRate.findFirst({
       where: {
         baseCurrency: base,
         quoteCurrency: quote
       },
       orderBy: { timestamp: 'desc' }
     });
+
+    if (!rateRecord && base !== quote) {
+      // Triangulate via USD if available
+      const [usdToQuote, usdToBase] = await Promise.all([
+        prisma.exchangeRate.findFirst({
+          where: { baseCurrency: 'USD', quoteCurrency: quote },
+          orderBy: { timestamp: 'desc' }
+        }),
+        base === 'USD' ? { rate: 1.0, timestamp: new Date(), source: 'Reference' } : prisma.exchangeRate.findFirst({
+          where: { baseCurrency: 'USD', quoteCurrency: base },
+          orderBy: { timestamp: 'desc' }
+        })
+      ]);
+
+      if (usdToQuote && usdToBase && usdToBase.rate > 0) {
+        const derivedRate = Number((usdToQuote.rate / usdToBase.rate).toFixed(4));
+        rateRecord = {
+          baseCurrency: base,
+          quoteCurrency: quote,
+          rate: derivedRate,
+          timestamp: usdToQuote.timestamp || new Date(),
+          source: usdToQuote.source || 'FXPulse Derived'
+        };
+      }
+    }
 
     if (!rateRecord) {
       return res.status(404).json({
@@ -146,7 +171,7 @@ export const getPairHistory = async (req, res) => {
   cutoffDate.setDate(cutoffDate.getDate() - days);
 
   try {
-    const records = await prisma.exchangeRate.findMany({
+    let records = await prisma.exchangeRate.findMany({
       where: {
         baseCurrency: base,
         quoteCurrency: quote,
@@ -154,6 +179,47 @@ export const getPairHistory = async (req, res) => {
       },
       orderBy: { timestamp: 'asc' }
     });
+
+    if (records.length === 0 && base !== quote) {
+      // Triangulate historical series via USD
+      const [quoteSeries, baseSeries] = await Promise.all([
+        prisma.exchangeRate.findMany({
+          where: { baseCurrency: 'USD', quoteCurrency: quote, timestamp: { gte: cutoffDate } },
+          orderBy: { timestamp: 'asc' }
+        }),
+        base === 'USD'
+          ? []
+          : prisma.exchangeRate.findMany({
+              where: { baseCurrency: 'USD', quoteCurrency: base, timestamp: { gte: cutoffDate } },
+              orderBy: { timestamp: 'asc' }
+            })
+      ]);
+
+      if (quoteSeries.length > 0) {
+        if (base === 'USD') {
+          records = quoteSeries;
+        } else if (baseSeries.length > 0) {
+          const baseMap = new Map();
+          for (const b of baseSeries) {
+            const dayKey = b.timestamp.toISOString().split('T')[0];
+            baseMap.set(dayKey, b.rate);
+          }
+
+          records = quoteSeries.map(q => {
+            const dayKey = q.timestamp.toISOString().split('T')[0];
+            const bRate = baseMap.get(dayKey) || baseSeries[baseSeries.length - 1].rate;
+            const rate = bRate > 0 ? Number((q.rate / bRate).toFixed(4)) : q.rate;
+            return {
+              rate,
+              timestamp: q.timestamp,
+              source: q.source,
+              baseCurrency: base,
+              quoteCurrency: quote
+            };
+          });
+        }
+      }
+    }
 
     res.json({
       success: true,

@@ -1,100 +1,65 @@
-import React, { useState } from 'react';
-import { RefreshCw, Clock } from 'lucide-react';
-import { triggerManualSync } from '../services/api';
+import React from 'react';
+import { Bookmark } from 'lucide-react';
+import CurrencySearchBar from './CurrencySearchBar';
 
-export default function Header({ 
-  marketTimestamp, 
-  dataSource = 'External FX API', 
-  baseCurrency = 'USD', 
-  onBaseChange,
-  onRefresh
+export default function Header({
+  currencies = [],
+  selectedCurrency = 'USD',
+  onSelectCurrency,
+  isConnected = true,
+  bookmarks = [],
+  onToggleBookmark,
+  onOpenBookmarks
 }) {
-  const [syncing, setSyncing] = useState(false);
-  const [syncMessage, setSyncMessage] = useState(null);
-
-  const handleSync = async () => {
-    setSyncing(true);
-    setSyncMessage(null);
-    try {
-      const res = await triggerManualSync({ bases: ['USD', 'EUR', 'GBP'] });
-      setSyncMessage(`Updated`);
-      if (onRefresh) onRefresh();
-      setTimeout(() => setSyncMessage(null), 2500);
-    } catch (err) {
-      setSyncMessage('Failed');
-      setTimeout(() => setSyncMessage(null), 2500);
-    } finally {
-      setSyncing(false);
-    }
-  };
-
-  const formatUtcTime = (d) => {
-    if (!d) return '--:-- UTC';
-    const date = new Date(d);
-    return date.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit', 
-      timeZone: 'UTC',
-      hour12: false 
-    }) + ' UTC';
-  };
-
   return (
-    <header className="bg-black sticky top-0 z-30 px-8 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#1a1a1a]">
-      {/* Title */}
-      <div>
-        <h1 className="text-lg font-medium text-white tracking-normal">
-          Currency Intelligence
-        </h1>
-        <p className="text-xs text-zinc-500 font-normal mt-0.5">
-          Monitor currency movements, trends, and market signals.
-        </p>
-      </div>
-
-      {/* Metadata & Actions */}
-      <div className="flex flex-wrap items-center gap-4 text-xs font-normal">
-        {/* Market Data Timestamp */}
-        <div className="flex items-center gap-2 text-zinc-400">
-          <Clock className="w-3.5 h-3.5 text-zinc-500" />
-          <span>Last market data:</span>
-          <span className="text-zinc-200">{formatUtcTime(marketTimestamp)}</span>
-        </div>
-
-        {/* Source */}
-        <span className="text-zinc-700">&bull;</span>
-        <div className="text-zinc-400">
-          Source: <span className="text-zinc-200">{dataSource}</span>
-        </div>
-
-        {/* Base Currency Switcher */}
-        {onBaseChange && (
-          <div className="flex items-center bg-[#0d0d0d] rounded-lg p-1 border border-[#222222] ml-2">
-            {['USD', 'EUR', 'GBP'].map((code) => (
-              <button
-                key={code}
-                onClick={() => onBaseChange(code)}
-                className={`px-3 py-1 rounded-md text-xs transition-colors ${
-                  baseCurrency === code
-                    ? 'bg-white text-black font-medium'
-                    : 'text-zinc-400 hover:text-zinc-200 font-normal'
-                }`}
-              >
-                {code}
-              </button>
-            ))}
+    <header className="bg-white border-b border-zinc-200/80 sticky top-0 z-30">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        {/* Brand */}
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-lg font-bold text-zinc-900 tracking-tight">
+                FXPulse
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                <span className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                {isConnected ? 'Live' : 'Connecting'}
+              </span>
+            </div>
+            <p className="text-xs text-zinc-500 mt-0.5 font-normal hidden sm:block">
+              Track the Indian Rupee against global currencies
+            </p>
           </div>
-        )}
+        </div>
 
-        {/* Simple Sync Button */}
-        <button
-          onClick={handleSync}
-          disabled={syncing}
-          className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-[#0d0d0d] hover:bg-[#161616] text-zinc-300 hover:text-white border border-[#222222] transition-colors disabled:opacity-50"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin text-white' : 'text-zinc-500'}`} />
-          <span>{syncing ? 'Syncing...' : syncMessage || 'Sync Data'}</span>
-        </button>
+        {/* Search & Bookmarks Button */}
+        <div className="flex items-center gap-2.5 w-full sm:w-auto">
+          <div className="flex-1 sm:w-64">
+            <CurrencySearchBar
+              currencies={currencies}
+              selectedCurrency={selectedCurrency}
+              onSelectCurrency={onSelectCurrency}
+              bookmarks={bookmarks}
+              onToggleBookmark={onToggleBookmark}
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={onOpenBookmarks}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold bg-zinc-50 hover:bg-zinc-100 text-zinc-800 border border-zinc-200 hover:border-zinc-300 transition-all shadow-sm active:scale-95"
+            title="Open Bookmarked Currencies"
+          >
+            <Bookmark className={`w-4 h-4 ${bookmarks.length > 0 ? 'fill-amber-500 text-amber-500' : 'text-zinc-500'}`} />
+            <span className="hidden sm:inline">Bookmarks</span>
+            <span className="px-1.5 py-0.2 rounded-full text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-200/80">
+              {bookmarks.length}
+            </span>
+          </button>
+        </div>
       </div>
     </header>
   );
 }
+
+

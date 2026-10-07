@@ -4,36 +4,23 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
-  darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        black: '#000000',
-        dark: {
-          bg: '#000000',
-          surface: '#080808',
-          card: '#0a0a0a',
-          cardHover: '#121212',
-          border: '#1c1c1c',
-          borderHover: '#2a2a2a',
-          input: '#0d0d0d',
-          muted: '#71717a',
-          subtle: '#27272a',
-        },
         fintech: {
-          bg: '#000000',
-          surface: '#080808',
-          card: '#0a0a0a',
-          cardHover: '#121212',
-          border: '#1c1c1c',
-          borderHover: '#2a2a2a',
-          accent: '#ffffff',
-          emerald: '#22c55e',
-          crimson: '#ef4444',
-          amber: '#f59e0b',
-          textMuted: '#71717a',
-          textPrimary: '#ffffff',
-          textSecondary: '#a1a1aa'
+          bg: '#FAFAFA',
+          surface: '#FFFFFF',
+          border: '#E4E4E7',
+          borderSubtle: '#F4F4F5',
+          textPrimary: '#09090B',
+          textSecondary: '#71717A',
+          textMuted: '#A1A1AA',
+          emerald: '#16A34A',
+          emeraldBg: '#F0FDF4',
+          crimson: '#DC2626',
+          crimsonBg: '#FEF2F2',
+          slate: '#475569',
+          slateBg: '#F1F5F9'
         }
       },
       fontFamily: {

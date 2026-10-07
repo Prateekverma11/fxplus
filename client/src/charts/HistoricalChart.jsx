@@ -11,43 +11,41 @@ import {
 
 export default function HistoricalChart({
   data = [],
-  pair = 'USD/INR',
+  pair = 'USD → INR',
   timeframe = '30D',
-  onTimeframeChange
+  onTimeframeChange,
+  isPositive = true
 }) {
-  const timeframes = ['1D', '7D', '30D', '90D', '1Y'];
+  const timeframes = ['7D', '30D', '90D'];
 
   if (!data || data.length === 0) {
     return (
-      <div className="h-72 flex items-center justify-center text-slate-400 text-xs font-normal">
-        No historical data available.
+      <div className="h-64 flex items-center justify-center text-zinc-400 text-xs font-normal">
+        No historical data available for {pair}.
       </div>
     );
   }
 
-  const rates = data.map(d => d.rate);
-  const minRate = Math.min(...rates);
-  const maxRate = Math.max(...rates);
+  const rates = data.map(d => Number(d.rate)).filter(r => !isNaN(r) && r > 0);
+  const minRate = rates.length > 0 ? Math.min(...rates) : 0;
+  const maxRate = rates.length > 0 ? Math.max(...rates) : 100;
   const padding = (maxRate - minRate) * 0.1 || minRate * 0.01;
-  const yDomain = [minRate - padding, maxRate + padding];
+  const yDomain = [Math.max(0, minRate - padding), maxRate + padding];
 
-  const firstRate = rates[0];
-  const lastRate = rates[rates.length - 1];
-  const periodChange = firstRate ? (((lastRate - firstRate) / firstRate) * 100).toFixed(2) : 0;
-  const isPositive = periodChange >= 0;
-
-  const gradientId = `chartGrad_${pair.replace('/', '_')}`;
-  const strokeColor = '#EDEDED';
+  const strokeColor = '#18181B'; // Minimalist dark stroke
+  const gradientId = `chartGrad_${pair.replace(/[^a-zA-Z0-9]/g, '_')}`;
 
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       const point = payload[0].payload;
       return (
-        <div className="bg-[#0a0a0a] border border-[#262626] px-3.5 py-2.5 rounded-lg shadow-xl text-xs font-normal">
-          <p className="text-zinc-500 mb-1">{point.formattedDate || new Date(point.timestamp).toLocaleDateString()}</p>
-          <div className="text-sm font-normal text-white">
-            {Number(point.rate).toFixed(4)} <span className="text-xs text-zinc-500">{pair.split('/')[1]}</span>
-          </div>
+        <div className="bg-white border border-zinc-200 px-3.5 py-2 rounded-lg shadow-sm text-xs">
+          <p className="text-zinc-500 font-normal mb-0.5">
+            {point.formattedDate || new Date(point.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+          </p>
+          <p className="text-sm font-semibold text-zinc-900">
+            ₹{Number(point.rate).toFixed(point.rate > 10 ? 2 : 4)}
+          </p>
         </div>
       );
     }
@@ -55,32 +53,22 @@ export default function HistoricalChart({
   };
 
   return (
-    <div className="w-full space-y-5">
-      {/* Chart Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <h3 className="text-sm font-medium text-white">{pair} Trajectory</h3>
-            <span className={`text-xs font-normal ${isPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
-              {isPositive ? `+${periodChange}%` : `${periodChange}%`} ({timeframe})
-            </span>
-          </div>
-          <p className="text-xs text-zinc-500 font-normal mt-0.5">
-            Range: {minRate.toFixed(4)} &ndash; {maxRate.toFixed(4)}
-          </p>
-        </div>
-
-        {/* Timeframe Selector */}
+    <div className="w-full space-y-4">
+      {/* Timeframe Filter Bar */}
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs text-zinc-500 font-normal">
+          Historical rate trend
+        </span>
         {onTimeframeChange && (
-          <div className="flex items-center bg-[#0d0d0d] rounded-lg p-1 border border-[#222222]">
+          <div className="flex items-center bg-zinc-100 p-0.5 rounded-lg border border-zinc-200/80">
             {timeframes.map((tf) => (
               <button
                 key={tf}
                 onClick={() => onTimeframeChange(tf)}
-                className={`px-3 py-1 text-xs rounded-md transition-colors ${
+                className={`px-3 py-1 text-xs rounded-md transition-all ${
                   timeframe === tf
-                    ? 'bg-white text-black font-medium'
-                    : 'text-zinc-400 hover:text-zinc-200 font-normal'
+                    ? 'bg-white text-zinc-900 font-semibold shadow-xs'
+                    : 'text-zinc-500 hover:text-zinc-900 font-medium'
                 }`}
               >
                 {tf}
@@ -90,33 +78,33 @@ export default function HistoricalChart({
         )}
       </div>
 
-      {/* Chart */}
-      <div className="h-72 w-full">
+      {/* Chart Canvas */}
+      <div className="h-64 sm:h-72 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+          <AreaChart data={data} margin={{ top: 10, right: 8, left: -16, bottom: 0 }}>
             <defs>
               <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={strokeColor} stopOpacity={0.12} />
-                <stop offset="95%" stopColor={strokeColor} stopOpacity={0.0} />
+                <stop offset="0%" stopColor="#18181B" stopOpacity={0.06} />
+                <stop offset="100%" stopColor="#18181B" stopOpacity={0.0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1a1a1a" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#F4F4F5" vertical={false} />
             <XAxis
               dataKey="formattedDate"
-              stroke="#52525b"
+              stroke="#A1A1AA"
               fontSize={11}
               tickLine={false}
-              axisLine={{ stroke: '#1a1a1a' }}
-              minTickGap={30}
+              axisLine={{ stroke: '#E4E4E7' }}
+              minTickGap={25}
             />
             <YAxis
               domain={yDomain}
-              stroke="#52525b"
+              stroke="#A1A1AA"
               fontSize={11}
               tickLine={false}
-              axisLine={{ stroke: '#1a1a1a' }}
-              tickFormatter={(v) => v > 10 ? v.toFixed(2) : v.toFixed(3)}
-              width={55}
+              axisLine={{ stroke: '#E4E4E7' }}
+              tickFormatter={(v) => `₹${v > 10 ? v.toFixed(2) : v.toFixed(3)}`}
+              width={65}
             />
             <Tooltip content={<CustomTooltip />} />
             <Area
@@ -126,6 +114,8 @@ export default function HistoricalChart({
               strokeWidth={1.75}
               fillOpacity={1}
               fill={`url(#${gradientId})`}
+              isAnimationActive={true}
+              animationDuration={400}
             />
           </AreaChart>
         </ResponsiveContainer>
