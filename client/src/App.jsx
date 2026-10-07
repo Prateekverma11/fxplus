@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom';
-import { Bookmark } from 'lucide-react';
 import Header from './components/Header';
 import NotificationToast from './components/NotificationToast';
 import BookmarksDrawer from './components/BookmarksDrawer';
@@ -154,22 +153,6 @@ export default function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
-
-        {/* Floating Quick Bookmark Trigger on Right Edge */}
-        <button
-          type="button"
-          onClick={() => setIsBookmarksOpen(true)}
-          className="fixed right-0 top-1/2 -translate-y-1/2 z-30 bg-white hover:bg-zinc-50 text-zinc-800 border-l border-t border-b border-zinc-200 shadow-lg py-3 px-2 rounded-l-xl flex flex-col items-center gap-1.5 transition-all hover:-translate-x-1 group"
-          title="Open Bookmarked Watchlist (Right Sidebar)"
-        >
-          <Bookmark className="w-4 h-4 fill-amber-500 text-amber-500 group-hover:scale-110 transition-transform" />
-          <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-wider [writing-mode:vertical-lr] rotate-180">
-            Bookmarks
-          </span>
-          <span className="w-4 h-4 rounded-full bg-amber-100 text-amber-900 text-[10px] font-bold flex items-center justify-center border border-amber-200">
-            {bookmarks.length}
-          </span>
-        </button>
 
         {/* Vertical Right-Side Slide-Over Drawer */}
         <BookmarksDrawer
