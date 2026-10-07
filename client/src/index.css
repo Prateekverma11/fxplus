@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #000000;
+    color: #EDEDED;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Minimal black scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #222222;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #333333;
+}
+
+/* Simple crisp black card utility */
+.card-clean {
+  background-color: #0a0a0a;
+  border: 1px solid #1a1a1a;
+  border-radius: 0.75rem;
+}
+
+.card-clean-hover {
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.card-clean-hover:hover {
+  background-color: #111111;
+  border-color: #2a2a2a;
+}
+

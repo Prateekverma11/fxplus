@@ -1,0 +1,21 @@
+{
+  "name": "fxpulse",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FXPulse — Currency Intelligence Platform",
+  "scripts": {
+    "setup": "npm --prefix server install && npm --prefix client install && npm --prefix server run prisma:push && npm --prefix server run seed",
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev",
+    "seed": "npm --prefix server run seed"
+  },
+  "keywords": [
+    "foreign-exchange",
+    "currency-intelligence",
+    "fintech",
+    "analytics",
+    "forex"
+  ],
+  "author": "",
+  "license": "ISC"
+}

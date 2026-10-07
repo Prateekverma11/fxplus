@@ -1,0 +1,66 @@
+// FXPulse Prisma Schema
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Currency {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  name      String
+  symbol    String?
+  createdAt DateTime @default(now())
+}
+
+model ExchangeRate {
+  id            String   @id @default(cuid())
+  baseCurrency  String
+  quoteCurrency String
+  rate          Float
+  timestamp     DateTime
+  source        String
+  createdAt     DateTime @default(now())
+
+  @@index([baseCurrency])
+  @@index([quoteCurrency])
+  @@index([timestamp])
+  @@index([baseCurrency, quoteCurrency, timestamp])
+  @@unique([baseCurrency, quoteCurrency, timestamp])
+}
+
+model Alert {
+  id            String    @id @default(cuid())
+  userId        String    @default("user_default")
+  baseCurrency  String
+  quoteCurrency String
+  condition     String    // "ABOVE", "BELOW", "PCT_CHANGE_GT", "PCT_CHANGE_LT"
+  threshold     Float
+  active        Boolean   @default(true)
+  triggeredAt   DateTime?
+  lastCheckedAt DateTime?
+  notes         String?
+  createdAt     DateTime  @default(now())
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  role      String   @default("user")
+  createdAt DateTime @default(now())
+}
+
+model SyncLog {
+  id              String    @id @default(cuid())
+  provider        String
+  status          String    // "SUCCESS" | "FAILED"
+  message         String?
+  recordsCount    Int       @default(0)
+  marketTimestamp DateTime?
+  requestDurationMs Int?
+  createdAt       DateTime  @default(now())
+}
