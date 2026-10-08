@@ -111,6 +111,7 @@ export default function Dashboard({
         change24h={change24h}
         referenceCurrency={selectedCurrency}
         referenceSymbol={activeCurrencyObj.symbol}
+        analytics={analytics}
       />
 
       {/* 2. Selected Currency Focus & Historical Graph with Bookmark Button */}
@@ -138,9 +139,10 @@ export default function Dashboard({
       {/* 4. Footer Metadata */}
       <Footer
         lastUpdated={analytics?.timestamp || systemStats?.lastSync}
-        source={analytics?.source || systemStats?.provider || 'European Central Bank / FX Providers'}
+        source={analytics?.source || systemStats?.provider || 'European Central Bank / Live FX'}
       />
     </div>
   );
 }
+
 

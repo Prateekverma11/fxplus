@@ -1,22 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom';
-import { Bookmark } from 'lucide-react';
 import Header from './components/Header';
 import NotificationToast from './components/NotificationToast';
 import BookmarksDrawer from './components/BookmarksDrawer';
 import Dashboard from './pages/Dashboard';
+import WelcomeAuth from './pages/WelcomeAuth';
 import socketService from './services/socket';
-import { fetchSystemStatus, fetchCurrencies } from './services/api';
+import { fetchSystemStatus, fetchCurrencies, fetchPairRate } from './services/api';
 import { useBookmarks } from './hooks/useBookmarks';
 
 // Wrapper for /analysis/:base/:quote or /currency/:code deep linking
-function AnalysisRouteWrapper({ onSelectCurrency }) {
+function AnalysisRouteWrapper({ onSelectCurrency, onOpenDashboard }) {
   const { base } = useParams();
   useEffect(() => {
     if (base && base !== 'INR') {
       onSelectCurrency(base.toUpperCase());
     }
-  }, [base, onSelectCurrency]);
+    if (onOpenDashboard) {
+      onOpenDashboard();
+    }
+  }, [base, onSelectCurrency, onOpenDashboard]);
 
   return <Navigate to="/" replace />;
 }
@@ -29,6 +32,24 @@ export default function App() {
   const [notifications, setNotifications] = useState([]);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [isBookmarksOpen, setIsBookmarksOpen] = useState(false);
+  const [ratesMap, setRatesMap] = useState({});
+
+  // Auth State
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('fxpulse_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  // Current view: 'auth' (welcome landing & signin) or 'dashboard' (live analytics)
+  const [currentView, setCurrentView] = useState(() => {
+    const saved = localStorage.getItem('fxpulse_user');
+    const guestExplored = sessionStorage.getItem('fxpulse_guest');
+    return (saved || guestExplored) ? 'dashboard' : 'auth';
+  });
 
   const { bookmarks, toggleBookmark, isBookmarked } = useBookmarks();
 
@@ -106,14 +127,66 @@ export default function App() {
     };
   }, []);
 
+  // 4. Fetch Quick Rates for top currencies
+  useEffect(() => {
+    let isMounted = true;
+    const popular = ['USD', 'EUR', 'GBP', 'JPY', 'AED', 'AUD', 'CAD', 'SGD', 'CHF', 'SAR', 'QAR', 'THB'];
+
+    async function loadRates() {
+      try {
+        const promises = popular.map(async (code) => {
+          try {
+            const res = await fetchPairRate(code, 'INR');
+            return { code, rate: res.rate };
+          } catch {
+            return { code, rate: null };
+          }
+        });
+        const results = await Promise.all(promises);
+        if (isMounted) {
+          const map = {};
+          results.forEach(r => {
+            if (r.rate) map[r.code] = r;
+          });
+          setRatesMap(map);
+        }
+      } catch (e) {
+        console.warn('Rates load warning:', e);
+      }
+    }
+
+    loadRates();
+    return () => {
+      isMounted = false;
+    };
+  }, [systemStats?.lastSync]);
+
   const handleDismissNotification = (id) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
+  };
+
+  const handleAuthenticate = (userData) => {
+    setUser(userData);
+    localStorage.setItem('fxpulse_user', JSON.stringify(userData));
+    setCurrentView('dashboard');
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('fxpulse_user');
+    sessionStorage.removeItem('fxpulse_guest');
+    setCurrentView('auth');
+  };
+
+  const handleExploreGuest = () => {
+    sessionStorage.setItem('fxpulse_guest', 'true');
+    setCurrentView('dashboard');
   };
 
   return (
     <Router>
       <div className="min-h-screen bg-[#FAFAFA] text-[#09090B] flex flex-col relative">
-        {/* Header with Search, Bookmarks Button, and Live Status */}
+        {/* Header with Brand, Search, Watchlist and Auth status */}
         <Header
           currencies={currencies}
           selectedCurrency={selectedCurrency}
@@ -122,54 +195,61 @@ export default function App() {
           bookmarks={bookmarks}
           onToggleBookmark={toggleBookmark}
           onOpenBookmarks={() => setIsBookmarksOpen(true)}
+          user={user}
+          onLogout={handleLogout}
+          onOpenAuth={() => setCurrentView('auth')}
+          onOpenDashboard={() => setCurrentView('dashboard')}
+          currentView={currentView}
         />
 
         {/* Main Content Area */}
-        <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-8">
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <Dashboard
-                  selectedCurrency={selectedCurrency}
-                  onSelectCurrency={setSelectedCurrency}
-                  currencies={currencies}
-                  systemStats={systemStats}
-                  bookmarks={bookmarks}
-                  onToggleBookmark={toggleBookmark}
-                  isBookmarked={isBookmarked}
-                />
-              }
+        <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
+          {currentView === 'auth' ? (
+            <WelcomeAuth
+              onAuthenticate={handleAuthenticate}
+              onExploreGuest={handleExploreGuest}
+              currencies={currencies}
+              ratesMap={ratesMap}
             />
-            {/* Deep link backwards compatibility */}
-            <Route
-              path="/analysis/:base/:quote"
-              element={<AnalysisRouteWrapper onSelectCurrency={setSelectedCurrency} />}
-            />
-            <Route
-              path="/currency/:base"
-              element={<AnalysisRouteWrapper onSelectCurrency={setSelectedCurrency} />}
-            />
-            {/* Redirect any other removed route to home */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+          ) : (
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <Dashboard
+                    selectedCurrency={selectedCurrency}
+                    onSelectCurrency={setSelectedCurrency}
+                    currencies={currencies}
+                    systemStats={systemStats}
+                    bookmarks={bookmarks}
+                    onToggleBookmark={toggleBookmark}
+                    isBookmarked={isBookmarked}
+                  />
+                }
+              />
+              {/* Deep link routes */}
+              <Route
+                path="/analysis/:base/:quote"
+                element={
+                  <AnalysisRouteWrapper
+                    onSelectCurrency={setSelectedCurrency}
+                    onOpenDashboard={() => setCurrentView('dashboard')}
+                  />
+                }
+              />
+              <Route
+                path="/currency/:base"
+                element={
+                  <AnalysisRouteWrapper
+                    onSelectCurrency={setSelectedCurrency}
+                    onOpenDashboard={() => setCurrentView('dashboard')}
+                  />
+                }
+              />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          )}
         </main>
-
-        {/* Floating Quick Bookmark Trigger on Right Edge */}
-        <button
-          type="button"
-          onClick={() => setIsBookmarksOpen(true)}
-          className="fixed right-0 top-1/2 -translate-y-1/2 z-30 bg-white hover:bg-zinc-50 text-zinc-800 border-l border-t border-b border-zinc-200 shadow-lg py-3 px-2 rounded-l-xl flex flex-col items-center gap-1.5 transition-all hover:-translate-x-1 group"
-          title="Open Bookmarked Watchlist (Right Sidebar)"
-        >
-          <Bookmark className="w-4 h-4 fill-amber-500 text-amber-500 group-hover:scale-110 transition-transform" />
-          <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-wider [writing-mode:vertical-lr] rotate-180">
-            Bookmarks
-          </span>
-          <span className="w-4 h-4 rounded-full bg-amber-100 text-amber-900 text-[10px] font-bold flex items-center justify-center border border-amber-200">
-            {bookmarks.length}
-          </span>
-        </button>
 
         {/* Vertical Right-Side Slide-Over Drawer */}
         <BookmarksDrawer
@@ -192,4 +272,6 @@ export default function App() {
     </Router>
   );
 }
+
+
 
