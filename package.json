@@ -5,6 +5,7 @@
   "description": "FXPulse — Currency Intelligence Platform",
   "scripts": {
     "setup": "npm --prefix server install && npm --prefix client install && npm --prefix server run prisma:push && npm --prefix server run seed",
+    "dev": "concurrently -n \"SERVER,CLIENT\" -c \"bgBlue.bold,bgGreen.bold\" \"npm run dev:server\" \"npm run dev:client\"",
     "dev:server": "npm --prefix server run dev",
     "dev:client": "npm --prefix client run dev",
     "seed": "npm --prefix server run seed"
@@ -17,5 +18,8 @@
     "forex"
   ],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  }
 }
