@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bookmark, Activity, Sparkles, User, LogOut, LogIn } from 'lucide-react';
+import { Bookmark, Activity, User, LogOut, LogIn } from 'lucide-react';
 import CurrencySearchBar from './CurrencySearchBar';
 
 export default function Header({

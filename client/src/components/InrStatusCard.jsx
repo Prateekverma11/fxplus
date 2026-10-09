@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowUpRight, ArrowDownRight, Minus, ArrowRightLeft, Sparkles, TrendingUp, ShieldCheck } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Minus, ArrowRightLeft, TrendingUp, ShieldCheck } from 'lucide-react';
 
 export default function InrStatusCard({
   currentRate,
@@ -151,8 +151,8 @@ export default function InrStatusCard({
           <div className="p-4 rounded-xl bg-zinc-50/80 border border-zinc-200/80 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-zinc-700 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-zinc-500" />
-                Quick Currency Calculator
+                <ArrowRightLeft className="w-3.5 h-3.5 text-zinc-500" />
+                Currency Calculator
               </span>
               <button
                 type="button"

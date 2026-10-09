@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bookmark, BookmarkCheck, ArrowUpRight, ArrowDownRight, Minus, X, Sparkles, ChevronRight } from 'lucide-react';
+import { Bookmark, BookmarkCheck, ArrowUpRight, ArrowDownRight, Minus, X, Plus, ChevronRight } from 'lucide-react';
 import { fetchPairAnalytics } from '../services/api';
 
 export default function BookmarksDrawer({
@@ -168,10 +168,10 @@ export default function BookmarksDrawer({
                       key={code}
                       type="button"
                       onClick={() => onToggleBookmark(code)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-white text-zinc-700 border border-zinc-200 hover:border-amber-400 hover:text-amber-700 transition-all shadow-sm"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-white text-zinc-700 border border-zinc-200 hover:border-zinc-400 hover:text-zinc-900 transition-all shadow-sm"
                     >
-                      <Sparkles className="w-3 h-3 text-amber-500" />
-                      <span>+ {code}</span>
+                      <Plus className="w-3 h-3 text-zinc-500" />
+                      <span>{code}</span>
                     </button>
                   ))}
                 </div>

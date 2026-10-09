@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bookmark, BookmarkCheck, ArrowUpRight, ArrowDownRight, Minus, TrendingUp, X, Sparkles } from 'lucide-react';
+import { Bookmark, BookmarkCheck, ArrowUpRight, ArrowDownRight, Minus, TrendingUp, X, Plus } from 'lucide-react';
 import { fetchPairAnalytics } from '../services/api';
 
 export default function BookmarkedWatchlist({
@@ -114,10 +114,10 @@ export default function BookmarkedWatchlist({
               <button
                 key={code}
                 onClick={() => onToggleBookmark(code)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white text-zinc-700 border border-zinc-200 hover:border-amber-400 hover:text-amber-700 transition-all shadow-sm"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white text-zinc-700 border border-zinc-200 hover:border-zinc-400 hover:text-zinc-900 transition-all shadow-sm"
               >
-                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                <span>+ Bookmark {code}</span>
+                <Plus className="w-3.5 h-3.5 text-zinc-500" />
+                <span>Bookmark {code}</span>
               </button>
             ))}
           </div>
