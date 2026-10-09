@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bookmark, Sparkles, Globe } from 'lucide-react';
+import { Bookmark, Globe } from 'lucide-react';
 
 export default function QuickCurrencies({
   currencies = [],

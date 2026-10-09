@@ -4,13 +4,13 @@
 
 ---
 
-## 📌 Executive Overview
+## Executive Overview
 
 **FXPulse** is a full-stack financial intelligence web application engineered to transform raw foreign exchange (FX) market quotes into actionable quantitative signals. Rather than functioning as a simplistic currency converter, FXPulse ingests reference rates from global FX providers, persists chronological market time series into an indexed database, and executes transparent mathematical analytics across multiple time horizons.
 
 ---
 
-## 🏗 System Architecture
+## System Architecture
 
 ```
                                   ┌───────────────────────────┐
@@ -33,7 +33,7 @@
 
 ---
 
-## ⚡ Key Features
+## Key Features
 
 - **Live Market Telemetry**: Ingests and displays reference spot rates with clear distinction between external market timestamps (e.g. `14:30 UTC`) and system request time.
 - **Provider Abstraction Layer**: Pluggable provider architecture (`ExchangeRateApiProvider`, `FrankfurterProvider`, `FxRatesApiProvider`) with automatic multi-tier fallback.
@@ -49,14 +49,14 @@
 
 ---
 
-## 🛠 Technology Stack
+## Technology Stack
 
 ### Frontend
 - **React 18** (Vite build toolchain)
-- **Tailwind CSS** (Dark fintech glassmorphism design system)
+- **Tailwind CSS** (Clean minimalist design system)
 - **Recharts** (Quantitative financial area and multi-series charts)
 - **React Router 6** (Single-page app routing)
-- **Lucide React** (Fintech icon suite)
+- **Lucide React** (Icon suite)
 - **Socket.IO Client** (Real-time gateway subscription)
 - **Axios** (REST client)
 
@@ -69,7 +69,7 @@
 
 ---
 
-## 📊 Database Schema (Prisma)
+## Database Schema (Prisma)
 
 ```prisma
 model Currency {
@@ -124,7 +124,7 @@ model SyncLog {
 
 ---
 
-## 🧮 Quantitative Methodology
+## Quantitative Methodology
 
 1. **Percentage Return**:
    $$\text{Return}_{\Delta t} = \left(\frac{\text{Rate}_t - \text{Rate}_{t-\Delta t}}{\text{Rate}_{t-\Delta t}}\right) \times 100$$
@@ -143,7 +143,7 @@ model SyncLog {
 
 ---
 
-## 🚀 Quickstart & Setup Guide
+## Quickstart & Setup Guide
 
 ### 1. Prerequisites
 - **Node.js** v18+ or v24+
@@ -219,7 +219,7 @@ npm run dev
 
 ---
 
-## 🧪 Testing and Verifying Real Market Data
+## Testing and Verifying Real Market Data
 
 ### 1. Test Server Health & Active Provider
 ```bash
@@ -252,7 +252,7 @@ curl http://localhost:5000/api/intelligence?base=USD
 
 ---
 
-## 🔍 Known Limitations of External FX Providers
+## Known Limitations of External FX Providers
 
 1. **Daily Reference Frequency**: Reference rates published by institutions such as the European Central Bank (ECB) update once daily around 16:00 CET on working business days.
 2. **Weekend Interbank Illiquidity**: Spot FX interbank trading pauses between Friday 21:00 UTC and Sunday 21:00 UTC; rates over weekends reflect Friday market closing levels.
